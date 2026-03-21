@@ -1,25 +1,27 @@
 package jwt
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/skibasu/auto-flow-api/internal/config"
 )
 
 type Claims struct {
 	Sub   string   `json:"sub"`
 	Roles []string `json:"role"`
+	Type  string   `json:"type"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userId string, roles []string, duration time.Duration) (string, error) {
-	cfg := config.Load()
-	secret := []byte(cfg.JWTSecret)
+func GenerateToken(tokenType, userId, secret string, roles []string, duration time.Duration) (string, error) {
+
+	s := []byte(secret)
 
 	claims := Claims{
 		Sub:   userId,
 		Roles: roles,
+		Type:  tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 		},
@@ -27,15 +29,15 @@ func GenerateToken(userId string, roles []string, duration time.Duration) (strin
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(secret)
+	return token.SignedString(s)
 }
 
-func ParseToken(tokenStr string) (*Claims, error) {
-	cfg := config.Load()
-	secret := []byte(cfg.JWTSecret)
+func ParseToken(tokenStr, secret string) (*Claims, error) {
+
+	s := []byte(secret)
 
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return secret, nil
+		return s, nil
 	})
 
 	if err != nil {
@@ -43,7 +45,7 @@ func ParseToken(tokenStr string) (*Claims, error) {
 	}
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return nil, err
+		return nil, errors.New("invalid token claims")
 	}
 
 	return claims, nil

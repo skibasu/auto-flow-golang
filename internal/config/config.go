@@ -22,7 +22,7 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		AppPort:   getEnv("APP_PORT", "3000"),
+		AppPort:   getEnv("APP_PORT", ":8000"),
 		JWTSecret: getEnv("JWT_SECRET", ""),
 		DBUrl:     getEnv("DATABASE_URL", ""),
 		Debug:     getEnvAsBool("DEBUG", false),

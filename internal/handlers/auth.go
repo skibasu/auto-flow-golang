@@ -44,32 +44,34 @@ func Auth(authService *services.AuthService) http.HandlerFunc {
 	}
 }
 
-func RefreshToken(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refreshToken")
-	if err != nil {
-		appErrors.NewUnauthorized(w, errors.New("missing refresh token"))
-		return
+func RefreshToken(authService *services.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		{
+			cookie, err := r.Cookie("refreshToken")
+			if err != nil {
+				appErrors.NewUnauthorized(w, errors.New("missing refresh token"))
+				return
+			}
+
+			access, refresh, err := authService.Refresh(cookie.Value)
+			if err != nil {
+				appErrors.NewUnauthorized(w, errors.New("invalid refresh token"))
+
+				return
+			}
+
+			http.SetCookie(w, &http.Cookie{
+				Name:     "refreshToken",
+				Value:    refresh,
+				HttpOnly: true,
+				Path:     "/",
+				Secure:   true,
+				SameSite: http.SameSiteNoneMode,
+			})
+
+			json.NewEncoder(w).Encode(map[string]string{
+				"accessToken": access,
+			})
+		}
 	}
-
-	service := services.AuthService{}
-
-	access, refresh, err := service.Refresh(cookie.Value)
-	if err != nil {
-		appErrors.NewUnauthorized(w, errors.New("invalid refresh token"))
-
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    refresh,
-		HttpOnly: true,
-		Path:     "/",
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	})
-
-	json.NewEncoder(w).Encode(map[string]string{
-		"accessToken": access,
-	})
 }
