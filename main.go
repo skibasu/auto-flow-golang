@@ -19,13 +19,13 @@ import (
 func main() {
 	cfg := config.Load()
 	database, err := db.New(cfg.DBUrl)
+	if err != nil {
+		panic(err)
+	}
 	userRepo := repository.NewUserRepository(database)
 	authService := services.New(userRepo)
 	userService := services.NewUserService(userRepo)
 
-	if err != nil {
-		panic(err)
-	}
 	defer database.Close()
 
 	router := chi.NewRouter()

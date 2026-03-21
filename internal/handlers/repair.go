@@ -6,7 +6,7 @@ import (
 )
 
 type Repair struct {
-	Id string
+	Id string `json:"id"`
 }
 
 func GetRepairs(w http.ResponseWriter, r *http.Request) {

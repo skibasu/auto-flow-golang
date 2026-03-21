@@ -123,7 +123,11 @@ func (r *UserRepository) GetUsers(filter dto.UsersFilterRequest) (*[]models.User
 		args = append(args, "%"+filter.FirstName+"%")
 		argID++
 	}
-
+	if filter.PhoneNumber != "" {
+		conditions = append(conditions, fmt.Sprintf("u.phone_number ILIKE $%d", argID))
+		args = append(args, "%"+filter.PhoneNumber+"%")
+		argID++
+	}
 	if filter.LastName != "" {
 		conditions = append(conditions, fmt.Sprintf("u.last_name ILIKE $%d", argID))
 		args = append(args, "%"+filter.LastName+"%")

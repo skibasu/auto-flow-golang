@@ -22,7 +22,7 @@ func NewNotFound(w http.ResponseWriter, err error) {
 		Code:    "NOT_FOUND",
 		Status:  404,
 	}
-	errorResponse(w, 500, res)
+	errorResponse(w, 404, res)
 }
 
 func NewBadRequest(w http.ResponseWriter, err error) {
