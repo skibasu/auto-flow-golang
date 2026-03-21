@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	SerwerAddress string
-	JWTSecret     string
-	DBUrl         string
-	Debug         bool
+	AppPort   string
+	JWTSecret string
+	DBUrl     string
+	Debug     bool
 }
 
 func Load() *Config {
@@ -22,10 +22,10 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		SerwerAddress: getEnv("SERVER_ADDRESS", ":8000"),
-		JWTSecret:     getEnv("JWT_SECRET", ""),
-		DBUrl:         getEnv("DATABASE_URL", ""),
-		Debug:         getEnvAsBool("DEBUG", false),
+		AppPort:   getEnv("APP_PORT", ":8000"),
+		JWTSecret: getEnv("JWT_SECRET", ""),
+		DBUrl:     getEnv("DATABASE_URL", ""),
+		Debug:     getEnvAsBool("DEBUG", false),
 	}
 
 	validate(cfg)

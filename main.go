@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 	userRepo := repository.NewUserRepository(database)
-	authService := services.New(userRepo)
+	authService := services.New(userRepo, cfg.JWTSecret)
 	userService := services.NewUserService(userRepo)
 
 	defer database.Close()
@@ -76,7 +76,7 @@ func main() {
 	})
 
 	server := &http.Server{
-		Addr:              cfg.SerwerAddress,
+		Addr:              ":" + cfg.AppPort,
 		Handler:           router,
 		ReadTimeout:       15 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
