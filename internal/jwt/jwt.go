@@ -10,16 +10,18 @@ import (
 type Claims struct {
 	Sub   string   `json:"sub"`
 	Roles []string `json:"role"`
+	Type  string   `json:"type"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userId string, roles []string, duration time.Duration) (string, error) {
+func GenerateToken(tokenType, userId string, roles []string, duration time.Duration) (string, error) {
 	cfg := config.Load()
 	secret := []byte(cfg.JWTSecret)
 
 	claims := Claims{
 		Sub:   userId,
 		Roles: roles,
+		Type:  tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 		},

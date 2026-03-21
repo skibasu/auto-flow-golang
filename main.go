@@ -33,7 +33,7 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{
-			"http://localhost:3000",
+			"https://localhost:3001",
 		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
@@ -45,6 +45,7 @@ func main() {
 	router.Group(func(r chi.Router) {
 
 		r.Post("/auth", handlers.Auth(authService))
+		r.Post("/refresh", handlers.RefreshToken(authService))
 	})
 	//Privet
 
@@ -75,7 +76,7 @@ func main() {
 	})
 
 	server := &http.Server{
-		Addr:              ":3000",
+		Addr:              cfg.SerwerAddress,
 		Handler:           router,
 		ReadTimeout:       15 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
