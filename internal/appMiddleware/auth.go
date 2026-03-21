@@ -41,18 +41,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			appErrors.NewUnauthorized(w, errors.New("invalid token"))
 			return
 		}
-		rolesRaw, ok := claims["role"].([]interface{})
-		if !ok {
-			appErrors.NewUnauthorized(w, errors.New("invalid token"))
-			return
-		}
+		roles := claims.Roles
 
-		var roles []string
-		for _, r := range rolesRaw {
-			roles = append(roles, r.(string))
-		}
 		user := UserContext{
-			Id:    claims["sub"].(string),
+			Id:    claims.Sub,
 			Roles: roles,
 		}
 

@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
+	"github.com/skibasu/auto-flow-api/internal/config"
 	"github.com/skibasu/auto-flow-api/internal/db"
 	"github.com/skibasu/auto-flow-api/internal/handlers"
 	"github.com/skibasu/auto-flow-api/internal/repository"
@@ -15,7 +17,8 @@ import (
 )
 
 func main() {
-	database, err := db.New()
+	cfg := config.Load()
+	database, err := db.New(cfg.DBUrl)
 	userRepo := repository.NewUserRepository(database)
 	authService := services.New(userRepo)
 	userService := services.NewUserService(userRepo)
@@ -29,7 +32,9 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Logger)
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins: []string{
+			"http://localhost:3000",
+		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
@@ -69,7 +74,14 @@ func main() {
 		})
 	})
 
-	server := &http.Server{Addr: ":3000", Handler: router}
+	server := &http.Server{
+		Addr:              ":3000",
+		Handler:           router,
+		ReadTimeout:       15 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	error := server.ListenAndServe()
 
 	if error != nil {

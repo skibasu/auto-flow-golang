@@ -34,8 +34,14 @@ func (s *AuthService) Login(login, password string) (string, string, error) {
 	if password != user.Password {
 		return "", "", errors.New("invalid credentials")
 	} else if user.Password == password {
-		access, _ := jwt.GenerateToken(user.Id, user.Roles, accessValidTime)
-		refresh, _ := jwt.GenerateToken(user.Id, nil, refreshValidTime)
+		access, err := jwt.GenerateToken(user.Id, user.Roles, accessValidTime)
+		if err != nil {
+			return "", "", err
+		}
+		refresh, err := jwt.GenerateToken(user.Id, nil, refreshValidTime)
+		if err != nil {
+			return "", "", err
+		}
 
 		return access, refresh, nil
 	} else {
@@ -50,11 +56,17 @@ func (s *AuthService) Refresh(refreshToken string) (string, string, error) {
 		return "", "", err
 	}
 
-	userID := claims["sub"].(string)
-	roles := claims["role"].([]string)
+	userID := claims.Sub
+	roles := claims.Roles
 
-	access, _ := jwt.GenerateToken(userID, roles, accessValidTime)
-	newRefresh, _ := jwt.GenerateToken(userID, nil, refreshValidTime)
+	access, err := jwt.GenerateToken(userID, roles, accessValidTime)
+	if err != nil {
+		return "", "", err
+	}
+	newRefresh, err := jwt.GenerateToken(userID, nil, refreshValidTime)
+	if err != nil {
+		return "", "", err
+	}
 
 	return access, newRefresh, nil
 }
