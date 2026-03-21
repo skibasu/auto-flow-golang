@@ -38,7 +38,7 @@ func (s *AuthService) Login(login, password string) (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		refresh, err := jwt.GenerateToken("refresh", user.Id, nil, refreshValidTime)
+		refresh, err := jwt.GenerateToken("refresh", user.Id, user.Roles, refreshValidTime)
 		if err != nil {
 			return "", "", err
 		}

@@ -22,7 +22,7 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		SerwerAddress: getEnv("SERWER_ADDRESS", ":8000"),
+		SerwerAddress: getEnv("SERVER_ADDRESS", ":8000"),
 		JWTSecret:     getEnv("JWT_SECRET", ""),
 		DBUrl:         getEnv("DATABASE_URL", ""),
 		Debug:         getEnvAsBool("DEBUG", false),
