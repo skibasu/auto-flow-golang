@@ -1,0 +1,70 @@
+# ----------------------
+# Go
+# ----------------------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+bin/
+build/
+dist/
+
+vendor/
+
+# Coverage
+coverage.out
+*.coverprofile
+
+# Logs
+*.log
+
+# ----------------------
+# Env
+# ----------------------
+.env
+.env.local
+.env.*.local
+
+# ----------------------
+# macOS
+# ----------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
+# ----------------------
+# IDE
+# ----------------------
+.vscode/
+.idea/
+
+# GoLand
+*.iml
+
+# ----------------------
+# Temp
+# ----------------------
+tmp/
+temp/
+
+# ----------------------
+# Debug
+# ----------------------
+*.debug
