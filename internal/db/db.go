@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func New() (*pgxpool.Pool, error) {
+func New(url string) (*pgxpool.Pool, error) {
 
 	// conn := os.Getenv("postgres://postgres:postgres@localhost:5432/autoflow")
 

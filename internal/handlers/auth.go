@@ -33,6 +33,8 @@ func Auth(authService *services.AuthService) http.HandlerFunc {
 			Value:    refresh,
 			HttpOnly: true,
 			Path:     "/",
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
 		})
 
 		// 📦 response
@@ -63,6 +65,8 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		Value:    refresh,
 		HttpOnly: true,
 		Path:     "/",
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	json.NewEncoder(w).Encode(map[string]string{
