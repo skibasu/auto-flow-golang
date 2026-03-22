@@ -79,7 +79,7 @@ func ValidateRequest[T any](hideDetails bool) func(http.Handler) http.Handler {
 
 				}
 
-				appErrors.NewBadRequest(w, err, nil)
+				appErrors.NewBadRequest(w, errors.New("validation error"), nil)
 				return
 			}
 
