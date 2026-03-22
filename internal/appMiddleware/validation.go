@@ -90,7 +90,10 @@ func ValidateRequest[T any](hideDetails bool) func(http.Handler) http.Handler {
 		})
 	}
 }
-
 func GetValidatedBody[T any](r *http.Request) T {
-	return r.Context().Value(BodyKey).(T)
+	val := r.Context().Value(BodyKey)
+	if val == nil {
+		panic("GetValidatedBody called without ValidateRequest middleware")
+	}
+	return val.(T)
 }
