@@ -40,6 +40,7 @@ func (r *UserRepository) GetAuthDataByEmail(email string) (*models.UserAuth, err
 		Scan(&user.Id, &user.Password, &rolesJSON)
 
 	if err != nil {
+
 		return nil, err
 	}
 

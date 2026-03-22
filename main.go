@@ -11,6 +11,7 @@ import (
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/config"
 	"github.com/skibasu/auto-flow-api/internal/db"
+	"github.com/skibasu/auto-flow-api/internal/dto"
 	"github.com/skibasu/auto-flow-api/internal/handlers"
 	"github.com/skibasu/auto-flow-api/internal/repository"
 	"github.com/skibasu/auto-flow-api/internal/services"
@@ -43,8 +44,8 @@ func main() {
 
 	//Public
 	router.Group(func(r chi.Router) {
-
-		r.Post("/auth", handlers.Auth(authService))
+		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).
+			Post("/auth", handlers.Auth(authService))
 		r.Post("/refresh", handlers.RefreshToken(authService))
 	})
 	//Privet

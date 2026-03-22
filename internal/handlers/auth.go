@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
 	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/services"
@@ -12,18 +13,11 @@ import (
 
 func Auth(authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		var req dto.LoginRequest
-
-		err := json.NewDecoder(r.Body).Decode(&req)
-		if err != nil {
-			appErrors.NewBadRequest(w, err)
-			return
-		}
+		req := appMiddleware.GetValidatedBody[dto.Credentials](r)
 
 		access, refresh, err := authService.Login(req.Email, req.Password)
 		if err != nil {
-			appErrors.NewUnauthorized(w, err)
+			appErrors.NewUnauthorized(w, err, nil)
 			return
 		}
 
@@ -49,13 +43,13 @@ func RefreshToken(authService *services.AuthService) http.HandlerFunc {
 		{
 			cookie, err := r.Cookie("refreshToken")
 			if err != nil {
-				appErrors.NewUnauthorized(w, errors.New("missing refresh token"))
+				appErrors.NewUnauthorized(w, errors.New("missing refresh token"), nil)
 				return
 			}
 
 			access, refresh, err := authService.Refresh(cookie.Value)
 			if err != nil {
-				appErrors.NewUnauthorized(w, errors.New("invalid refresh token"))
+				appErrors.NewUnauthorized(w, errors.New("invalid refresh token"), nil)
 
 				return
 			}
