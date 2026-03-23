@@ -6,58 +6,64 @@ import (
 )
 
 type ErrorResponse struct {
-	Message string `json:"message"`
-	Status  int    `json:"status"`
-	Code    string `json:"code"`
+	Message string             `json:"message"`
+	Status  int                `json:"status"`
+	Code    string             `json:"code"`
+	Details *map[string]string `json:"details,omitempty"`
 }
 
-func errorResponse(w http.ResponseWriter, status int, err ErrorResponse) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+func errorResponse(w http.ResponseWriter, err ErrorResponse) {
+
+	w.WriteHeader(err.Status)
 	json.NewEncoder(w).Encode(err)
 }
-func NewNotFound(w http.ResponseWriter, err error) {
+func NewNotFound(w http.ResponseWriter, err error, details *map[string]string) {
 	res := ErrorResponse{
 		Message: err.Error(),
 		Code:    "NOT_FOUND",
-		Status:  404,
+		Status:  http.StatusNotFound,
+		Details: details,
 	}
-	errorResponse(w, 404, res)
+	errorResponse(w, res)
 }
 
-func NewBadRequest(w http.ResponseWriter, err error) {
+func NewBadRequest(w http.ResponseWriter, err error, details *map[string]string) {
 
 	res := ErrorResponse{
 		Message: err.Error(),
 		Code:    "BAD_REQUEST",
-		Status:  400,
+		Status:  http.StatusBadRequest,
+		Details: details,
 	}
-	errorResponse(w, 400, res)
+	errorResponse(w, res)
 }
 
-func NewUnauthorized(w http.ResponseWriter, err error) {
+func NewUnauthorized(w http.ResponseWriter, err error, details *map[string]string) {
 	res := ErrorResponse{
 		Message: err.Error(),
 		Code:    "UNAUTHORIZED",
-		Status:  401,
+		Status:  http.StatusUnauthorized,
+		Details: details,
 	}
-	errorResponse(w, 401, res)
+	errorResponse(w, res)
 }
 
-func NewForbidden(w http.ResponseWriter, err error) {
+func NewForbidden(w http.ResponseWriter, err error, details *map[string]string) {
 	res := ErrorResponse{
 		Message: err.Error(),
 		Code:    "FORBIDDEN",
-		Status:  403,
+		Status:  http.StatusForbidden,
+		Details: details,
 	}
-	errorResponse(w, 403, res)
+	errorResponse(w, res)
 }
 
-func NewInternal(w http.ResponseWriter, err error) {
+func NewInternal(w http.ResponseWriter, err error, details *map[string]string) {
 	res := ErrorResponse{
 		Message: err.Error(),
 		Code:    "INTERNAL_ERROR",
-		Status:  500,
+		Status:  http.StatusInternalServerError,
+		Details: details,
 	}
-	errorResponse(w, 500, res)
+	errorResponse(w, res)
 }

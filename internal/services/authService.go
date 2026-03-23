@@ -5,6 +5,7 @@ import (
 
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
 	"github.com/skibasu/auto-flow-api/internal/repository"
 )
@@ -26,6 +27,10 @@ func New(repo *repository.UserRepository, configSecret string) *AuthService {
 func (s *AuthService) Login(login, password string) (string, string, error) {
 	user, err := s.repo.GetAuthDataByEmail(login)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", "", errors.New("invalid credentials")
+		}
+
 		return "", "", err
 	}
 

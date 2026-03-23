@@ -27,13 +27,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		header := r.Header.Get("Authorization")
 		if header == "" {
-			appErrors.NewUnauthorized(w, errors.New("missing token"))
+			appErrors.NewUnauthorized(w, errors.New("missing token"), nil)
 			return
 		}
 
 		parts := strings.Split(header, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			appErrors.NewUnauthorized(w, errors.New("invalid token format"))
+			appErrors.NewUnauthorized(w, errors.New("invalid token format"), nil)
 			return
 		}
 
@@ -41,7 +41,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		claims, err := jwt.ParseToken(tokenStr, cfg.JWTSecret)
 		if err != nil {
-			appErrors.NewUnauthorized(w, errors.New("invalid token"))
+			appErrors.NewUnauthorized(w, errors.New("invalid token"), nil)
 			return
 		}
 		roles := claims.Roles

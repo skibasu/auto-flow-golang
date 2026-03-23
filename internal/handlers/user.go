@@ -17,19 +17,19 @@ func GetMe(userService *services.UserService) http.HandlerFunc {
 
 		ctxUser, ok := r.Context().Value(appMiddleware.UserCtxKey).(appMiddleware.UserContext)
 		if !ok {
-			appErrors.NewUnauthorized(w, errors.New("invalid user context"))
+			appErrors.NewUnauthorized(w, errors.New("invalid user context"), nil)
 			return
 		}
 
 		if ctxUser.Id == "" {
-			appErrors.NewUnauthorized(w, errors.New("missing user id"))
+			appErrors.NewUnauthorized(w, errors.New("missing user id"), nil)
 			return
 		}
 
 		// 👇 user z bazy
 		user, err := userService.GetMe(ctxUser.Id)
 		if err != nil {
-			appErrors.NewNotFound(w, err)
+			appErrors.NewNotFound(w, err, nil)
 			return
 		}
 
@@ -53,7 +53,7 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 
 		users, err := userService.GetUsers(filter)
 		if err != nil {
-			appErrors.NewInternal(w, err)
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 

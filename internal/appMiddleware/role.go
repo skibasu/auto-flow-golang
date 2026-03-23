@@ -9,8 +9,8 @@ import (
 )
 
 func hasRequiredRole(userRoles []string, requiredRoles []string) bool {
-	for _, ur := range userRoles {
-		if slices.Contains(requiredRoles, ur) {
+	for _, u := range userRoles {
+		if slices.Contains(requiredRoles, u) {
 			return true
 		}
 	}
@@ -23,13 +23,13 @@ func RequireRole(roles []string) func(http.Handler) http.Handler {
 
 			user, ok := r.Context().Value(UserCtxKey).(UserContext)
 			if !ok {
-				appErrors.NewUnauthorized(w, errors.New("unauthorized"))
+				appErrors.NewUnauthorized(w, errors.New("unauthorized"), nil)
 
 				return
 			}
 
 			if !hasRequiredRole(user.Roles, roles) {
-				appErrors.NewForbidden(w, errors.New("forbidden"))
+				appErrors.NewForbidden(w, errors.New("forbidden"), nil)
 
 				return
 			}
