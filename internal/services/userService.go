@@ -25,3 +25,7 @@ func (s *UserService) GetUsers(filters dto.UsersFilterRequest) (*[]models.User, 
 func (s *UserService) CreateUser(user dto.UserRequest) (*models.User, error) {
 	return s.repo.CreateUser(user)
 }
+
+func (s *UserService) DeleteUser(id string) error {
+	return s.repo.DeleteUser(id)
+}

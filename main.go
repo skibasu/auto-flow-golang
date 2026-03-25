@@ -45,8 +45,7 @@ func main() {
 
 	//Public
 	router.Group(func(r chi.Router) {
-		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).
-			Post("/auth", handlers.Auth(authService))
+		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).Post("/auth", handlers.Auth(authService))
 		r.Post("/refresh", handlers.RefreshToken(authService))
 	})
 	//Privet
@@ -69,10 +68,12 @@ func main() {
 	})
 	//Admin
 	router.Group(func(r chi.Router) {
+
 		r.Use(appMiddleware.AuthMiddleware)
 		r.Use(appMiddleware.RequireRole([]string{"ADMIN"}))
 		r.Route("/users", func(r chi.Router) {
-			r.Post("/", handlers.CreateUser(userService))
+			r.With(appMiddleware.ValidateRequest[dto.UserRequest](false)).Post("/", handlers.CreateUser(userService))
+			r.Delete("/{id}", handlers.DeleteUser(userService))
 			r.Get("/", handlers.GetUsers(userService))
 		})
 	})

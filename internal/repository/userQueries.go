@@ -79,3 +79,4 @@ const GET_USERS_PART_2 = `
 		u.phone_number,
 		u.avatar
 	`
+const DELETE_USER = `DELETE FROM users WHERE id = $1`

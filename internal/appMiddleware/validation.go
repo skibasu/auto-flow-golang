@@ -16,7 +16,7 @@ const BodyKey = contextKey("body")
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
-func ValidateRequest[T any](hideDetails bool) func(http.Handler) http.Handler {
+func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -50,7 +50,7 @@ func ValidateRequest[T any](hideDetails bool) func(http.Handler) http.Handler {
 				default:
 					details["json"] = "invalid request"
 				}
-				if hideDetails {
+				if protectData {
 					appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 					return
 				} else {
@@ -69,7 +69,7 @@ func ValidateRequest[T any](hideDetails bool) func(http.Handler) http.Handler {
 					for _, e := range validateErrs {
 						details[strings.ToLower(e.Field())] = e.Tag()
 					}
-					if hideDetails {
+					if protectData {
 						appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 						return
 					} else {

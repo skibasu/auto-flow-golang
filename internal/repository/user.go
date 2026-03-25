@@ -139,3 +139,17 @@ func (r *UserRepository) CreateUser(user dto.UserRequest) (*models.User, error) 
 
 	return &createdUser, nil
 }
+
+func (r *UserRepository) DeleteUser(id string) error {
+	query := DELETE_USER
+	cmd, err := r.db.Exec(context.Background(), query, id)
+	if err != nil {
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return errors.New("user not found")
+	}
+
+	return nil
+}

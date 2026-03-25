@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
 	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
@@ -63,17 +64,35 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 
 func CreateUser(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var body dto.UserRequest
+		req := appMiddleware.GetValidatedBody[dto.UserRequest](r)
 
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			appErrors.NewBadRequest(w, err, nil)
-			return
-		}
-		user, err := userService.CreateUser(body)
+		user, err := userService.CreateUser(req)
 		if err != nil {
 			appErrors.NewInternal(w, err, nil)
 			return
 		}
 		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func DeleteUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		if id == "" {
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
+			return
+		}
+
+		err := userService.DeleteUser(id)
+
+		if err != nil {
+			appErrors.NewBadRequest(w, err, nil)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent) // 204
+
 	}
 }
