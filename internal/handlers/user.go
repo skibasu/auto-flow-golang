@@ -68,6 +68,10 @@ func CreateUser(userService *services.UserService) http.HandlerFunc {
 
 		user, err := userService.CreateUser(req)
 		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+				appErrors.NewConflict(w, err, nil)
+				return
+			}
 			appErrors.NewInternal(w, err, nil)
 			return
 		}

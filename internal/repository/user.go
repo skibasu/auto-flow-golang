@@ -132,6 +132,9 @@ func (r *UserRepository) CreateUser(user dto.UserRequest) (*models.User, error) 
 	)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			return nil, errors.New("duplicate key")
+		}
 		return nil, err
 	}
 
