@@ -8,7 +8,7 @@ import (
 	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
 )
 
-func hasRequiredRole(userRoles []string, requiredRoles []string) bool {
+func HasRequiredRole(userRoles []string, requiredRoles []string) bool {
 	for _, u := range userRoles {
 		if slices.Contains(requiredRoles, u) {
 			return true
@@ -28,7 +28,7 @@ func RequireRole(roles []string) func(http.Handler) http.Handler {
 				return
 			}
 
-			if !hasRequiredRole(user.Roles, roles) {
+			if !HasRequiredRole(user.Roles, roles) {
 				appErrors.NewForbidden(w, errors.New("forbidden"), nil)
 
 				return

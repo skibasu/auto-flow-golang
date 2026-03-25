@@ -1,14 +1,9 @@
 package dto
 
 type UsersFilterRequest struct {
-	Email       string
-	FirstName   string
-	LastName    string
-	PhoneNumber string
-	Roles       []string
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email       string   `json:"email"`
+	FirstName   string   `json:"firstName"`
+	LastName    string   `json:"lastName"`
+	PhoneNumber string   `json:"phoneNumber"`
+	Roles       []string `json:"roles"`
 }

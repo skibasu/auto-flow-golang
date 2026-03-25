@@ -60,3 +60,20 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 		json.NewEncoder(w).Encode(users)
 	}
 }
+
+func CreateUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var body dto.UserRequest
+
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			appErrors.NewBadRequest(w, err, nil)
+			return
+		}
+		user, err := userService.CreateUser(body)
+		if err != nil {
+			appErrors.NewInternal(w, err, nil)
+			return
+		}
+		json.NewEncoder(w).Encode(user)
+	}
+}

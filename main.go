@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	appMiddleware.RegisterValidation()
 	userRepo := repository.NewUserRepository(database)
 	authService := services.New(userRepo, cfg.JWTSecret)
 	userService := services.NewUserService(userRepo)
@@ -71,7 +72,7 @@ func main() {
 		r.Use(appMiddleware.AuthMiddleware)
 		r.Use(appMiddleware.RequireRole([]string{"ADMIN"}))
 		r.Route("/users", func(r chi.Router) {
-
+			r.Post("/", handlers.CreateUser(userService))
 			r.Get("/", handlers.GetUsers(userService))
 		})
 	})
