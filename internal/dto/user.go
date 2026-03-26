@@ -5,7 +5,7 @@ type UserRequest struct {
 	Password    string   `json:"password"`
 	FirstName   string   `json:"firstName" validate:"required"`
 	LastName    string   `json:"lastName" validate:"required"`
-	PhoneNumber string   `json:"phoneNumber"`
+	PhoneNumber string   `json:"phoneNumber" validate:"phoneNumber"`
 	Avatar      string   `json:"avatar"`
 	Nip         string   `json:"nip"`
 	Roles       []string `json:"roles"`

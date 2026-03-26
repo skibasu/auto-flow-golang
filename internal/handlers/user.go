@@ -92,7 +92,11 @@ func DeleteUser(userService *services.UserService) http.HandlerFunc {
 		err := userService.DeleteUser(id)
 
 		if err != nil {
-			appErrors.NewBadRequest(w, err, nil)
+			if strings.Contains(err.Error(), "user not found") {
+				appErrors.NewNotFound(w, err, nil)
+				return
+			}
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 
