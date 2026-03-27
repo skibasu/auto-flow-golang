@@ -80,3 +80,13 @@ const GET_USERS_PART_2 = `
 		u.avatar
 	`
 const DELETE_USER = `DELETE FROM users WHERE id = $1`
+
+const PATCH_USER = `
+		UPDATE users
+		SET %s
+		WHERE id = $%d
+		RETURNING id, email, phone_number, first_name, last_name, nip
+	`
+const DELETE_USER_ROLES = `DELETE FROM user_roles WHERE user_id = $1`
+const UPDATE_USER_ROLES = `INSERT INTO user_roles (user_id, role)
+			 SELECT $1, unnest($2::user_role[])`

@@ -10,3 +10,13 @@ type UserRequest struct {
 	Nip         string   `json:"nip"`
 	Roles       []string `json:"roles"`
 }
+
+type UpdateUserRequest struct {
+	Password    *string  `json:"password" validate:"omitempty,min=8"`
+	Email       *string  `json:"email" validate:"omitempty,email"`
+	PhoneNumber *string  `json:"phoneNumber" validate:"omitempty,phoneNumber"`
+	FirstName   *string  `json:"firstName" validate:"omitempty,required,min=3,max=36"`
+	LastName    *string  `json:"lastName" validate:"omitempty,required,min=3,max=36"`
+	Nip         *string  `json:"nip" validate:"omitempty"`
+	Roles       []string `json:"roles" validate:"omitempty"`
+}

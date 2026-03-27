@@ -73,6 +73,7 @@ func main() {
 		r.Use(appMiddleware.RequireRole([]string{"ADMIN"}))
 		r.Route("/users", func(r chi.Router) {
 			r.With(appMiddleware.ValidateRequest[dto.UserRequest](false)).Post("/", handlers.CreateUser(userService))
+			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](false)).Patch("/{id}", handlers.UpdateUser(userService))
 			r.Delete("/{id}", handlers.DeleteUser(userService))
 			r.Get("/", handlers.GetUsers(userService))
 		})

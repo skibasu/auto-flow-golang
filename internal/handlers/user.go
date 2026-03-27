@@ -104,3 +104,20 @@ func DeleteUser(userService *services.UserService) http.HandlerFunc {
 
 	}
 }
+
+func UpdateUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		req := appMiddleware.GetValidatedBody[dto.UpdateUserRequest](r)
+		user, err := userService.UpdateUser(id, req)
+		if err != nil {
+
+			appErrors.NewInternal(w, err, nil)
+			return
+		}
+		json.NewEncoder(w).Encode(user)
+
+	}
+}

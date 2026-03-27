@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -155,4 +156,79 @@ func (r *UserRepository) DeleteUser(id string) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*models.User, error) {
+
+	setParts := []string{}
+	args := []interface{}{}
+	i := 1
+
+	if req.Email != nil && *req.Email != "" {
+		setParts = append(setParts, fmt.Sprintf("email = $%d", i))
+		args = append(args, *req.Email)
+		i++
+	}
+
+	if req.PhoneNumber != nil && *req.PhoneNumber != "" {
+		setParts = append(setParts, fmt.Sprintf("phone_number = $%d", i))
+		args = append(args, *req.PhoneNumber)
+		i++
+	}
+
+	if req.FirstName != nil && *req.FirstName != "" {
+		setParts = append(setParts, fmt.Sprintf("first_name = $%d", i))
+		args = append(args, *req.FirstName)
+		i++
+	}
+
+	if req.LastName != nil && *req.LastName != "" {
+		setParts = append(setParts, fmt.Sprintf("last_name = $%d", i))
+		args = append(args, *req.LastName)
+		i++
+	}
+	if req.Nip != nil && *req.Nip != "" {
+		setParts = append(setParts, fmt.Sprintf("nip = $%d", i))
+		args = append(args, *req.LastName)
+		i++
+	}
+	if req.Roles != nil {
+
+		// 1. delete old roles
+		_, err := r.db.Exec(context.Background(),
+			DELETE_USER_ROLES,
+			id,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// 2. insert new roles
+		if len(req.Roles) > 0 {
+			_, err = r.db.Exec(context.Background(), UPDATE_USER_ROLES,
+				id,
+				req.Roles,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+	}
+
+	if len(setParts) == 0 {
+		return nil, errors.New("no fields to update")
+	}
+
+	query := fmt.Sprintf(PATCH_USER, strings.Join(setParts, ", "), i)
+
+	args = append(args, id)
+
+	_, err := r.db.Exec(context.Background(), query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetMe(id)
 }

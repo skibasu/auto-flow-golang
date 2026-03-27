@@ -29,3 +29,6 @@ func (s *UserService) CreateUser(user dto.UserRequest) (*models.User, error) {
 func (s *UserService) DeleteUser(id string) error {
 	return s.repo.DeleteUser(id)
 }
+func (s *UserService) UpdateUser(id string, user dto.UpdateUserRequest) (*models.User, error) {
+	return s.repo.UpdateUser(id, user)
+}
