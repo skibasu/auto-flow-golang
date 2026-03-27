@@ -189,9 +189,13 @@ func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*mode
 	}
 	if req.Nip != nil && *req.Nip != "" {
 		setParts = append(setParts, fmt.Sprintf("nip = $%d", i))
-		args = append(args, *req.LastName)
+		args = append(args, *req.Nip)
 		i++
 	}
+	if len(setParts) == 0 && req.Roles == nil {
+		return nil, errors.New("no fields to update")
+	}
+
 	if req.Roles != nil {
 
 		// 1. delete old roles
@@ -216,19 +220,17 @@ func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*mode
 		}
 	}
 
-	if len(setParts) == 0 {
-		return nil, errors.New("no fields to update")
+	if len(setParts) > 0 {
+		query := fmt.Sprintf(PATCH_USER, strings.Join(setParts, ", "), i)
+
+		args = append(args, id)
+
+		_, err := r.db.Exec(context.Background(), query, args...)
+
+		if err != nil {
+			return nil, err
+		}
+
 	}
-
-	query := fmt.Sprintf(PATCH_USER, strings.Join(setParts, ", "), i)
-
-	args = append(args, id)
-
-	_, err := r.db.Exec(context.Background(), query, args...)
-
-	if err != nil {
-		return nil, err
-	}
-
 	return r.GetMe(id)
 }
