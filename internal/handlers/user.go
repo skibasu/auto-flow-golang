@@ -110,6 +110,11 @@ func UpdateUser(userService *services.UserService) http.HandlerFunc {
 
 		id := chi.URLParam(r, "id")
 
+		if id == "" {
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
+			return
+		}
+
 		req := appMiddleware.GetValidatedBody[dto.UpdateUserRequest](r)
 		user, err := userService.UpdateUser(id, req)
 		if err != nil {
