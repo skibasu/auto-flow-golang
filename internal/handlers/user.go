@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
 	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
@@ -58,5 +59,70 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(users)
+	}
+}
+
+func CreateUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := appMiddleware.GetValidatedBody[dto.UserRequest](r)
+
+		user, err := userService.CreateUser(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+				appErrors.NewConflict(w, err, nil)
+				return
+			}
+			appErrors.NewInternal(w, err, nil)
+			return
+		}
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func DeleteUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		if id == "" {
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
+			return
+		}
+
+		err := userService.DeleteUser(id)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "user not found") {
+				appErrors.NewNotFound(w, err, nil)
+				return
+			}
+			appErrors.NewInternal(w, err, nil)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent) // 204
+
+	}
+}
+
+func UpdateUser(userService *services.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		if id == "" {
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
+			return
+		}
+
+		req := appMiddleware.GetValidatedBody[dto.UpdateUserRequest](r)
+		user, err := userService.UpdateUser(id, req)
+		if err != nil {
+
+			appErrors.NewInternal(w, err, nil)
+			return
+		}
+		json.NewEncoder(w).Encode(user)
+
 	}
 }

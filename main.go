@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	appMiddleware.RegisterValidation()
 	userRepo := repository.NewUserRepository(database)
 	authService := services.New(userRepo, cfg.JWTSecret)
 	userService := services.NewUserService(userRepo)
@@ -44,8 +45,7 @@ func main() {
 
 	//Public
 	router.Group(func(r chi.Router) {
-		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).
-			Post("/auth", handlers.Auth(authService))
+		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).Post("/auth", handlers.Auth(authService))
 		r.Post("/refresh", handlers.RefreshToken(authService))
 	})
 	//Privet
@@ -68,10 +68,13 @@ func main() {
 	})
 	//Admin
 	router.Group(func(r chi.Router) {
+
 		r.Use(appMiddleware.AuthMiddleware)
 		r.Use(appMiddleware.RequireRole([]string{"ADMIN"}))
 		r.Route("/users", func(r chi.Router) {
-
+			r.With(appMiddleware.ValidateRequest[dto.UserRequest](false)).Post("/", handlers.CreateUser(userService))
+			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](false)).Patch("/{id}", handlers.UpdateUser(userService))
+			r.Delete("/{id}", handlers.DeleteUser(userService))
 			r.Get("/", handlers.GetUsers(userService))
 		})
 	})

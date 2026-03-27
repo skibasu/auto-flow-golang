@@ -21,3 +21,14 @@ func (s *UserService) GetMe(id string) (*models.User, error) {
 func (s *UserService) GetUsers(filters dto.UsersFilterRequest) (*[]models.User, error) {
 	return s.repo.GetUsers(filters)
 }
+
+func (s *UserService) CreateUser(user dto.UserRequest) (*models.User, error) {
+	return s.repo.CreateUser(user)
+}
+
+func (s *UserService) DeleteUser(id string) error {
+	return s.repo.DeleteUser(id)
+}
+func (s *UserService) UpdateUser(id string, user dto.UpdateUserRequest) (*models.User, error) {
+	return s.repo.UpdateUser(id, user)
+}

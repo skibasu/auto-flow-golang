@@ -67,3 +67,12 @@ func NewInternal(w http.ResponseWriter, err error, details *map[string]string) {
 	}
 	errorResponse(w, res)
 }
+func NewConflict(w http.ResponseWriter, err error, details *map[string]string) {
+	res := ErrorResponse{
+		Status:  http.StatusConflict,
+		Code:    "CONFLICT",
+		Message: err.Error(),
+		Details: details,
+	}
+	errorResponse(w, res)
+}
