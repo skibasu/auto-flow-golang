@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	"github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/services"
 )
 

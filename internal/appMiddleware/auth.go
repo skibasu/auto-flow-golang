@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/config"
-	"github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
 )
 
@@ -27,13 +27,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		header := r.Header.Get("Authorization")
 		if header == "" {
-			helpers.NewUnauthorized(w, errors.New("missing token"), nil)
+			appErrors.NewUnauthorized(w, errors.New("missing token"), nil)
 			return
 		}
 
 		parts := strings.Split(header, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			helpers.NewUnauthorized(w, errors.New("invalid token format"), nil)
+			appErrors.NewUnauthorized(w, errors.New("invalid token format"), nil)
 			return
 		}
 
@@ -41,7 +41,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		claims, err := jwt.ParseToken(tokenStr, cfg.JWTSecret)
 		if err != nil {
-			helpers.NewUnauthorized(w, errors.New("invalid token"), nil)
+			appErrors.NewUnauthorized(w, errors.New("invalid token"), nil)
 			return
 		}
 		roles := claims.Roles

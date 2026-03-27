@@ -2,8 +2,8 @@ package services
 
 import (
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	"github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/models"
+	"github.com/skibasu/auto-flow-api/internal/password"
 	"github.com/skibasu/auto-flow-api/internal/repository"
 )
 
@@ -33,7 +33,7 @@ func (s *UserService) DeleteUser(id string) error {
 func (s *UserService) UpdateUser(id string, user dto.UpdateUserRequest) (*models.User, error) {
 
 	if user.Password != nil && *user.Password != "" {
-		hashed, err := helpers.HashPassword(user.Password)
+		hashed, err := password.HashPassword(user.Password)
 		if err == nil {
 			user.Password = &hashed
 		}

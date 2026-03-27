@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/skibasu/auto-flow-api/internal/helpers"
+	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 )
 
 func HasRequiredRole(userRoles []string, requiredRoles []string) bool {

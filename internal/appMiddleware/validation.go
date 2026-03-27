@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/skibasu/auto-flow-api/internal/helpers"
+	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 )
 
 const BodyKey = contextKey("body")
