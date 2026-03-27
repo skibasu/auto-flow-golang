@@ -1,4 +1,4 @@
-package appErrors
+package helpers
 
 import (
 	"encoding/json"

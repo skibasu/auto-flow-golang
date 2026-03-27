@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
+	"github.com/skibasu/auto-flow-api/internal/helpers"
 )
 
 func HasRequiredRole(userRoles []string, requiredRoles []string) bool {
@@ -23,13 +23,13 @@ func RequireRole(roles []string) func(http.Handler) http.Handler {
 
 			user, ok := r.Context().Value(UserCtxKey).(UserContext)
 			if !ok {
-				appErrors.NewUnauthorized(w, errors.New("unauthorized"), nil)
+				helpers.NewUnauthorized(w, errors.New("unauthorized"), nil)
 
 				return
 			}
 
 			if !HasRequiredRole(user.Roles, roles) {
-				appErrors.NewForbidden(w, errors.New("forbidden"), nil)
+				helpers.NewForbidden(w, errors.New("forbidden"), nil)
 
 				return
 			}
