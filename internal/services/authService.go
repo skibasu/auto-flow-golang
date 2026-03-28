@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
 	"github.com/skibasu/auto-flow-api/internal/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const accessValidTime, refreshValidTime = 15 * time.Minute, 7 * 24 * time.Hour
@@ -26,6 +27,7 @@ func New(repo *repository.UserRepository, configSecret string) *AuthService {
 
 func (s *AuthService) Login(login, password string) (string, string, error) {
 	user, err := s.repo.GetAuthDataByEmail(login)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", "", errors.New("invalid credentials")
@@ -34,28 +36,24 @@ func (s *AuthService) Login(login, password string) (string, string, error) {
 		return "", "", err
 	}
 
-	// 🔐 sprawdzenie hasła
-	// err = bcrypt.CompareHashAndPassword(
-	// 	[]byte(user.Password),
-	// 	[]byte(password),
-	// )
-
-	if password != user.Password {
-		return "", "", errors.New("invalid credentials")
-	} else if user.Password == password {
-		access, err := jwt.GenerateToken("access", user.Id, s.secret, user.Roles, accessValidTime)
-		if err != nil {
-			return "", "", err
-		}
-		refresh, err := jwt.GenerateToken("refresh", user.Id, s.secret, user.Roles, refreshValidTime)
-		if err != nil {
-			return "", "", err
-		}
-
-		return access, refresh, nil
-	} else {
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(password),
+	)
+	if err != nil {
 		return "", "", errors.New("invalid credentials")
 	}
+
+	access, err := jwt.GenerateToken("access", user.Id, s.secret, user.Roles, accessValidTime)
+	if err != nil {
+		return "", "", err
+	}
+	refresh, err := jwt.GenerateToken("refresh", user.Id, s.secret, user.Roles, refreshValidTime)
+	if err != nil {
+		return "", "", err
+	}
+
+	return access, refresh, nil
 
 }
 
