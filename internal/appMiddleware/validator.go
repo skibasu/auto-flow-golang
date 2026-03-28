@@ -20,7 +20,7 @@ func RegisterValidation() {
 
 	validate.RegisterValidation("password", func(fl validator.FieldLevel) bool {
 		password := fl.Field().String()
-		return upperRegex.MatchString(password) && digitRegex.MatchString(password) && specialRegex.MatchString(password)
+		return len(password) > 7 && upperRegex.MatchString(password) && digitRegex.MatchString(password) && specialRegex.MatchString(password)
 
 	})
 	validate.RegisterValidation("phoneNumber", func(fl validator.FieldLevel) bool {

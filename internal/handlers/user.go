@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
 	"github.com/skibasu/auto-flow-api/internal/services"
@@ -18,19 +18,19 @@ func GetMe(userService *services.UserService) http.HandlerFunc {
 
 		ctxUser, ok := r.Context().Value(appMiddleware.UserCtxKey).(appMiddleware.UserContext)
 		if !ok {
-			helpers.NewUnauthorized(w, errors.New("invalid user context"), nil)
+			appErrors.NewUnauthorized(w, errors.New("invalid user context"), nil)
 			return
 		}
 
 		if ctxUser.Id == "" {
-			helpers.NewUnauthorized(w, errors.New("missing user id"), nil)
+			appErrors.NewUnauthorized(w, errors.New("missing user id"), nil)
 			return
 		}
 
 		// 👇 user z bazy
 		user, err := userService.GetMe(ctxUser.Id)
 		if err != nil {
-			helpers.NewNotFound(w, err, nil)
+			appErrors.NewNotFound(w, err, nil)
 			return
 		}
 
@@ -54,7 +54,7 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 
 		users, err := userService.GetUsers(filter)
 		if err != nil {
-			helpers.NewInternal(w, err, nil)
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 
@@ -69,10 +69,10 @@ func CreateUser(userService *services.UserService) http.HandlerFunc {
 		user, err := userService.CreateUser(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate key") {
-				helpers.NewConflict(w, err, nil)
+				appErrors.NewConflict(w, err, nil)
 				return
 			}
-			helpers.NewInternal(w, err, nil)
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 		json.NewEncoder(w).Encode(user)
@@ -85,7 +85,7 @@ func DeleteUser(userService *services.UserService) http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 
 		if id == "" {
-			helpers.NewBadRequest(w, errors.New("missing id"), nil)
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
 			return
 		}
 
@@ -93,10 +93,10 @@ func DeleteUser(userService *services.UserService) http.HandlerFunc {
 
 		if err != nil {
 			if strings.Contains(err.Error(), "user not found") {
-				helpers.NewNotFound(w, err, nil)
+				appErrors.NewNotFound(w, err, nil)
 				return
 			}
-			helpers.NewInternal(w, err, nil)
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 
@@ -111,7 +111,7 @@ func UpdateUser(userService *services.UserService) http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 
 		if id == "" {
-			helpers.NewBadRequest(w, errors.New("missing id"), nil)
+			appErrors.NewBadRequest(w, errors.New("missing id"), nil)
 			return
 		}
 
@@ -119,7 +119,7 @@ func UpdateUser(userService *services.UserService) http.HandlerFunc {
 		user, err := userService.UpdateUser(id, req)
 		if err != nil {
 
-			helpers.NewInternal(w, err, nil)
+			appErrors.NewInternal(w, err, nil)
 			return
 		}
 		json.NewEncoder(w).Encode(user)
