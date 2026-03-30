@@ -13,7 +13,7 @@ import (
 	"github.com/skibasu/auto-flow-api/internal/services"
 )
 
-func GetMe(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) GetMe(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ctxUser, ok := r.Context().Value(appMiddleware.UserCtxKey).(appMiddleware.UserContext)
@@ -38,7 +38,7 @@ func GetMe(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func GetUsers(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) GetUsers(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
 
@@ -62,7 +62,7 @@ func GetUsers(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func CreateUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) CreateUser(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := appMiddleware.GetValidatedBody[dto.UserRequest](r)
 
@@ -79,7 +79,7 @@ func CreateUser(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func DeleteUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) DeleteUser(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := chi.URLParam(r, "id")
@@ -105,7 +105,7 @@ func DeleteUser(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func UpdateUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) UpdateUser(userService *services.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := chi.URLParam(r, "id")

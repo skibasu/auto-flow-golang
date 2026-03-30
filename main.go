@@ -25,12 +25,12 @@ func main() {
 	}
 	appMiddleware.RegisterValidation()
 	userRepo := repository.NewUserRepository(database)
-	authService := services.New(userRepo, cfg.JWTSecret)
+	authService := services.New(userRepo, config.GetEnv("JWT_SECRET"))
 	userService := services.NewUserService(userRepo)
 
 	defer database.Close()
 
-	router := chi.NewRouter()
+	var router *chi.Mux = chi.NewRouter()
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Logger)
 	router.Use(cors.Handler(cors.Options{

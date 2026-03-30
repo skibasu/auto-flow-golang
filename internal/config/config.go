@@ -2,15 +2,16 @@ package config
 
 import (
 	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	AppPort   string
-	JWTSecret string
-	DBUrl     string
-	Debug     bool
+	AppPort string
+	DBUrl   string
+	Debug   bool
 }
 
 func Load() *Config {
@@ -20,13 +21,31 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		AppPort:   getEnv("APP_PORT", "8000"),
-		JWTSecret: getEnv("JWT_SECRET", ""),
-		DBUrl:     getEnv("DATABASE_URL", ""),
-		Debug:     getEnvAsBool("DEBUG", false),
+		AppPort: GetEnv("APP_PORT"),
+		DBUrl:   GetEnv("DATABASE_URL"),
+		Debug:   getEnvAsBool("DEBUG"),
 	}
 
-	validate(cfg)
-
 	return cfg
+}
+
+func GetEnv(key string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return ""
+}
+
+func getEnvAsBool(key string) bool {
+	valueStr := GetEnv(key)
+	if valueStr == "" {
+		return false
+	}
+
+	value, err := strconv.ParseBool(valueStr)
+	if err != nil {
+		return false
+	}
+
+	return value
 }

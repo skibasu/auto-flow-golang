@@ -11,7 +11,7 @@ import (
 	"github.com/skibasu/auto-flow-api/internal/services"
 )
 
-func Auth(authService *services.AuthService) http.HandlerFunc {
+func (h *Handler) Auth(authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := appMiddleware.GetValidatedBody[dto.Credentials](r)
 
@@ -38,7 +38,7 @@ func Auth(authService *services.AuthService) http.HandlerFunc {
 	}
 }
 
-func RefreshToken(authService *services.AuthService) http.HandlerFunc {
+func (h *Handler) RefreshToken(authService *services.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		{
 			cookie, err := r.Cookie("refreshToken")

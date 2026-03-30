@@ -17,14 +17,14 @@ type AuthService struct {
 	secret string
 }
 
-func New(repo *repository.UserRepository, configSecret string) *AuthService {
+func (s *Service) New(repo *repository.UserRepository, configSecret string) *AuthService {
 	return &AuthService{
 		repo:   repo,
 		secret: configSecret,
 	}
 }
 
-func (s *AuthService) Login(login, password string) (string, string, error) {
+func (s *Service) Login(login, password string) (string, string, error) {
 	user, err := s.repo.GetAuthDataByEmail(login)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

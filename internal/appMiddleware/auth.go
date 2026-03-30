@@ -20,8 +20,6 @@ type UserContext struct {
 	Roles []string
 }
 
-var cfg = config.Load()
-
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -39,7 +37,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		tokenStr := parts[1]
 
-		claims, err := jwt.ParseToken(tokenStr, cfg.JWTSecret)
+		claims, err := jwt.ParseToken(tokenStr, config.GetEnv("JWT_SECRET"))
 		if err != nil {
 			appErrors.NewUnauthorized(w, errors.New("invalid token"), nil)
 			return
