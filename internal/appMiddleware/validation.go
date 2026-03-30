@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
+	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 )
 
 const BodyKey = contextKey("body")
@@ -51,10 +51,10 @@ func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 					details["json"] = "invalid request"
 				}
 				if protectData {
-					appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
+					helpers.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 					return
 				} else {
-					appErrors.NewBadRequest(w, errors.New("invalid request"), &details)
+					helpers.NewBadRequest(w, errors.New("invalid request"), &details)
 					return
 				}
 
@@ -70,16 +70,16 @@ func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 						details[strings.ToLower(e.Field())] = e.Tag()
 					}
 					if protectData {
-						appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
+						helpers.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 						return
 					} else {
-						appErrors.NewBadRequest(w, errors.New("validation error"), &details)
+						helpers.NewBadRequest(w, errors.New("validation error"), &details)
 						return
 					}
 
 				}
 
-				appErrors.NewBadRequest(w, errors.New("validation error"), nil)
+				helpers.NewBadRequest(w, errors.New("validation error"), nil)
 				return
 			}
 

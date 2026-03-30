@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/config"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
 )
 

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
 	"github.com/skibasu/auto-flow-api/internal/services"
 )
 

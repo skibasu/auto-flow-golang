@@ -192,6 +192,12 @@ func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*mode
 		args = append(args, *req.Nip)
 		i++
 	}
+	if req.Password != nil && *req.Password != "" {
+		setParts = append(setParts, fmt.Sprintf("password = $%d", i))
+		args = append(args, *req.Password)
+		i++
+	}
+
 	if len(setParts) == 0 && req.Roles == nil {
 		return nil, errors.New("no fields to update")
 	}
