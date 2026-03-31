@@ -7,25 +7,14 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
-	"github.com/skibasu/auto-flow-api/internal/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const accessValidTime, refreshValidTime = 15 * time.Minute, 7 * 24 * time.Hour
 
-type AuthService struct {
-	repo   *repository.UserRepository
-	secret string
-}
-
-func (s *Service) New(repo *repository.UserRepository, configSecret string) *AuthService {
-	return &AuthService{
-		repo:   repo,
-		secret: configSecret,
-	}
-}
-
 func (s *Service) Login(login, password string) (string, string, error) {
 	user, err := s.repo.GetAuthDataByEmail(login)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", "", errors.New("invalid credentials")
@@ -34,33 +23,29 @@ func (s *Service) Login(login, password string) (string, string, error) {
 		return "", "", err
 	}
 
-	// 🔐 sprawdzenie hasła
-	// err = bcrypt.CompareHashAndPassword(
-	// 	[]byte(user.Password),
-	// 	[]byte(password),
-	// )
-
-	if password != user.Password {
-		return "", "", errors.New("invalid credentials")
-	} else if user.Password == password {
-		access, err := jwt.GenerateToken("access", user.Id, s.secret, user.Roles, accessValidTime)
-		if err != nil {
-			return "", "", err
-		}
-		refresh, err := jwt.GenerateToken("refresh", user.Id, s.secret, user.Roles, refreshValidTime)
-		if err != nil {
-			return "", "", err
-		}
-
-		return access, refresh, nil
-	} else {
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(password),
+	)
+	if err != nil {
 		return "", "", errors.New("invalid credentials")
 	}
 
+	access, err := jwt.GenerateToken("access", user.Id, s.config.Secret, user.Roles, accessValidTime)
+	if err != nil {
+		return "", "", err
+	}
+	refresh, err := jwt.GenerateToken("refresh", user.Id, s.config.Secret, user.Roles, refreshValidTime)
+	if err != nil {
+		return "", "", err
+	}
+
+	return access, refresh, nil
+
 }
 
-func (s *AuthService) Refresh(refreshToken string) (string, string, error) {
-	claims, err := jwt.ParseToken(refreshToken, s.secret)
+func (s *Service) Refresh(refreshToken string) (string, string, error) {
+	claims, err := jwt.ParseToken(refreshToken, s.config.Secret)
 	if err != nil {
 		return "", "", err
 	}
@@ -70,11 +55,11 @@ func (s *AuthService) Refresh(refreshToken string) (string, string, error) {
 	userID := claims.Sub
 	roles := claims.Roles
 
-	access, err := jwt.GenerateToken("access", userID, s.secret, roles, accessValidTime)
+	access, err := jwt.GenerateToken("access", userID, s.config.Secret, roles, accessValidTime)
 	if err != nil {
 		return "", "", err
 	}
-	newRefresh, err := jwt.GenerateToken("refresh", userID, s.secret, roles, refreshValidTime)
+	newRefresh, err := jwt.GenerateToken("refresh", userID, s.config.Secret, roles, refreshValidTime)
 	if err != nil {
 		return "", "", err
 	}

@@ -5,17 +5,16 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
-	"github.com/skibasu/auto-flow-api/internal/services"
 )
 
-func (h *Handler) Auth(authService *services.AuthService) http.HandlerFunc {
+func (h *Handler) Auth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := appMiddleware.GetValidatedBody[dto.Credentials](r)
 
-		access, refresh, err := authService.Login(req.Email, req.Password)
+		access, refresh, err := h.services.Login(req.Email, req.Password)
 		if err != nil {
 			appErrors.NewUnauthorized(w, err, nil)
 			return
@@ -38,7 +37,7 @@ func (h *Handler) Auth(authService *services.AuthService) http.HandlerFunc {
 	}
 }
 
-func (h *Handler) RefreshToken(authService *services.AuthService) http.HandlerFunc {
+func (h *Handler) RefreshToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		{
 			cookie, err := r.Cookie("refreshToken")
@@ -47,7 +46,7 @@ func (h *Handler) RefreshToken(authService *services.AuthService) http.HandlerFu
 				return
 			}
 
-			access, refresh, err := authService.Refresh(cookie.Value)
+			access, refresh, err := h.services.Refresh(cookie.Value)
 			if err != nil {
 				appErrors.NewUnauthorized(w, errors.New("invalid refresh token"), nil)
 

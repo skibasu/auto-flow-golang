@@ -12,24 +12,26 @@ type Config struct {
 	AppPort string
 	DBUrl   string
 	Debug   bool
+	Secret  string
 }
 
-func Load() *Config {
+func NewConfig() Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("No .env file found")
 	}
 
-	cfg := &Config{
-		AppPort: GetEnv("APP_PORT"),
-		DBUrl:   GetEnv("DATABASE_URL"),
+	cfg := Config{
+		AppPort: getEnv("APP_PORT"),
+		DBUrl:   getEnv("DATABASE_URL"),
 		Debug:   getEnvAsBool("DEBUG"),
+		Secret:  getEnv("JWT_SECRET"),
 	}
 
 	return cfg
 }
 
-func GetEnv(key string) string {
+func getEnv(key string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
@@ -37,7 +39,7 @@ func GetEnv(key string) string {
 }
 
 func getEnvAsBool(key string) bool {
-	valueStr := GetEnv(key)
+	valueStr := getEnv(key)
 	if valueStr == "" {
 		return false
 	}

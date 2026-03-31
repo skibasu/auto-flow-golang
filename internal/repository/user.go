@@ -8,20 +8,11 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/skibasu/auto-flow-api/internal/dto"
 	"github.com/skibasu/auto-flow-api/internal/models"
 )
 
-type UserRepository struct {
-	db *pgxpool.Pool
-}
-
-func NewUserRepository(db *pgxpool.Pool) *UserRepository {
-	return &UserRepository{db: db}
-}
-
-func (r *UserRepository) GetAuthDataByEmail(email string) (*models.UserAuth, error) {
+func (r *Repository) GetAuthDataByEmail(email string) (*models.UserAuth, error) {
 	query := GET_AUTH_BY_EMAIL
 
 	var user models.UserAuth
@@ -43,7 +34,7 @@ func (r *UserRepository) GetAuthDataByEmail(email string) (*models.UserAuth, err
 	return &user, nil
 }
 
-func (r *UserRepository) GetMe(id string) (*models.User, error) {
+func (r *Repository) GetMe(id string) (*models.User, error) {
 	query := GET_ME
 
 	var user models.User
@@ -67,7 +58,7 @@ func (r *UserRepository) GetMe(id string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetUsers(filter dto.UsersFilterRequest) (*[]models.User, error) {
+func (r *Repository) GetUsers(filter dto.UsersFilterRequest) (*[]models.User, error) {
 	query := GET_USERS_PART_1
 	conditions, args := getUserFilters(filter)
 
@@ -110,7 +101,7 @@ func (r *UserRepository) GetUsers(filter dto.UsersFilterRequest) (*[]models.User
 	return &users, nil
 }
 
-func (r *UserRepository) CreateUser(user dto.UserRequest) (*models.User, error) {
+func (r *Repository) CreateUser(user dto.UserRequest) (*models.User, error) {
 	var createdUser models.User
 	query := CREATE_USER
 
@@ -144,7 +135,7 @@ func (r *UserRepository) CreateUser(user dto.UserRequest) (*models.User, error) 
 	return &createdUser, nil
 }
 
-func (r *UserRepository) DeleteUser(id string) error {
+func (r *Repository) DeleteUser(id string) error {
 	query := DELETE_USER
 	cmd, err := r.db.Exec(context.Background(), query, id)
 	if err != nil {
@@ -158,7 +149,7 @@ func (r *UserRepository) DeleteUser(id string) error {
 	return nil
 }
 
-func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*models.User, error) {
+func (r *Repository) UpdateUser(id string, req dto.UpdateUserRequest) (*models.User, error) {
 
 	setParts := []string{}
 	args := []interface{}{}
@@ -192,6 +183,12 @@ func (r *UserRepository) UpdateUser(id string, req dto.UpdateUserRequest) (*mode
 		args = append(args, *req.Nip)
 		i++
 	}
+	if req.Password != nil && *req.Password != "" {
+		setParts = append(setParts, fmt.Sprintf("password = $%d", i))
+		args = append(args, *req.Password)
+		i++
+	}
+
 	if len(setParts) == 0 && req.Roles == nil {
 		return nil, errors.New("no fields to update")
 	}

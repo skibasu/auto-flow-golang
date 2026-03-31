@@ -9,14 +9,12 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
+	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 )
 
 const BodyKey = contextKey("body")
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
-
-func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
+func ValidateRequest[T any](appMiddleware *AppMiddleware, protectData bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -51,16 +49,16 @@ func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 					details["json"] = "invalid request"
 				}
 				if protectData {
-					appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
+					helpers.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 					return
 				} else {
-					appErrors.NewBadRequest(w, errors.New("invalid request"), &details)
+					helpers.NewBadRequest(w, errors.New("invalid request"), &details)
 					return
 				}
 
 			}
 
-			if err := validate.Struct(body); err != nil {
+			if err := appMiddleware.Validator.Struct(body); err != nil {
 				var validateErrs validator.ValidationErrors
 
 				if errors.As(err, &validateErrs) {
@@ -70,16 +68,16 @@ func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 						details[strings.ToLower(e.Field())] = e.Tag()
 					}
 					if protectData {
-						appErrors.NewUnauthorized(w, errors.New("invalid credentials"), nil)
+						helpers.NewUnauthorized(w, errors.New("invalid credentials"), nil)
 						return
 					} else {
-						appErrors.NewBadRequest(w, errors.New("validation error"), &details)
+						helpers.NewBadRequest(w, errors.New("validation error"), &details)
 						return
 					}
 
 				}
 
-				appErrors.NewBadRequest(w, errors.New("validation error"), nil)
+				helpers.NewBadRequest(w, errors.New("validation error"), nil)
 				return
 			}
 

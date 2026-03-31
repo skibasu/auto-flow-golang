@@ -13,8 +13,7 @@ type Router struct {
 	*chi.Mux
 }
 
-func New() *Router {
-
+func NewRouter() *Router {
 	return &Router{chi.NewRouter()}
 }
 
@@ -32,10 +31,48 @@ func (r *Router) InitializeMiddlewares() {
 	r.Use(appMiddleware.JSON)
 }
 
-func (r *Router) InitializePublicRoutes() {
+func (r *Router) InitializeRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+	r.InitializeAdminRoutes(handlers, mw)
+	r.InitializePrivateRoutes(handlers, mw)
+	r.InitializePublicRoutes(handlers, mw)
+}
+func (r *Router) InitializePublicRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
 	r.Group(func(r chi.Router) {
 
-		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).Post("/auth", handlers.Auth(authService))
-		r.Post("/refresh", handlers.RefreshToken(authService))
+		r.With(appMiddleware.ValidateRequest[dto.Credentials](mw, true)).Post("/auth", handlers.Auth())
+		r.Post("/refresh", handlers.RefreshToken())
+	})
+}
+
+func (r *Router) InitializePrivateRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+
+	r.Group(func(r chi.Router) {
+		r.Use(mw.AuthMiddleware)
+		r.Route("/me", func(r chi.Router) {
+
+			r.Get("/", handlers.GetMe())
+		})
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(mw.AuthMiddleware)
+		r.Use(mw.RequireRole([]string{"MANAGER", "ADMIN"}))
+		r.Route("/repairs", func(r chi.Router) {
+
+			r.Get("/", handlers.GetRepairs)
+		})
+	})
+}
+
+func (r *Router) InitializeAdminRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+	r.Group(func(r chi.Router) {
+		r.Use(mw.AuthMiddleware)
+		r.Use(mw.RequireRole([]string{"ADMIN"}))
+		r.Route("/users", func(r chi.Router) {
+			r.With(appMiddleware.ValidateRequest[dto.UserRequest](mw, false)).Post("/", handlers.CreateUser())
+			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](mw, false)).Patch("/{id}", handlers.UpdateUser())
+			r.Delete("/{id}", handlers.DeleteUser())
+			r.Get("/", handlers.GetUsers())
+		})
 	})
 }

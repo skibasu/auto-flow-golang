@@ -7,16 +7,15 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/skibasu/auto-flow-api/internal/appErrors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	appErrors "github.com/skibasu/auto-flow-api/internal/helpers"
-	"github.com/skibasu/auto-flow-api/internal/services"
 )
 
-func (h *Handler) GetMe(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) GetMe() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		ctxUser, ok := r.Context().Value(appMiddleware.UserCtxKey).(appMiddleware.UserContext)
+		ctxUser, ok := r.Context().Value(h.middleware.UserCtxKey).(appMiddleware.UserContext)
 		if !ok {
 			appErrors.NewUnauthorized(w, errors.New("invalid user context"), nil)
 			return
@@ -27,8 +26,7 @@ func (h *Handler) GetMe(userService *services.UserService) http.HandlerFunc {
 			return
 		}
 
-		// 👇 user z bazy
-		user, err := userService.GetMe(ctxUser.Id)
+		user, err := h.services.GetMe(ctxUser.Id)
 		if err != nil {
 			appErrors.NewNotFound(w, err, nil)
 			return
@@ -38,7 +36,7 @@ func (h *Handler) GetMe(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func (h *Handler) GetUsers(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) GetUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
 
@@ -52,7 +50,7 @@ func (h *Handler) GetUsers(userService *services.UserService) http.HandlerFunc {
 			filter.Roles = strings.Split(roles, ",")
 		}
 
-		users, err := userService.GetUsers(filter)
+		users, err := h.services.GetUsers(filter)
 		if err != nil {
 			appErrors.NewInternal(w, err, nil)
 			return
@@ -62,11 +60,11 @@ func (h *Handler) GetUsers(userService *services.UserService) http.HandlerFunc {
 	}
 }
 
-func (h *Handler) CreateUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := appMiddleware.GetValidatedBody[dto.UserRequest](r)
 
-		user, err := userService.CreateUser(req)
+		user, err := h.services.CreateUser(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate key") {
 				appErrors.NewConflict(w, err, nil)
@@ -79,7 +77,8 @@ func (h *Handler) CreateUser(userService *services.UserService) http.HandlerFunc
 	}
 }
 
-func (h *Handler) DeleteUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) DeleteUser() http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := chi.URLParam(r, "id")
@@ -89,7 +88,7 @@ func (h *Handler) DeleteUser(userService *services.UserService) http.HandlerFunc
 			return
 		}
 
-		err := userService.DeleteUser(id)
+		err := h.services.DeleteUser(id)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "user not found") {
@@ -105,7 +104,7 @@ func (h *Handler) DeleteUser(userService *services.UserService) http.HandlerFunc
 	}
 }
 
-func (h *Handler) UpdateUser(userService *services.UserService) http.HandlerFunc {
+func (h *Handler) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id := chi.URLParam(r, "id")
@@ -116,7 +115,7 @@ func (h *Handler) UpdateUser(userService *services.UserService) http.HandlerFunc
 		}
 
 		req := appMiddleware.GetValidatedBody[dto.UpdateUserRequest](r)
-		user, err := userService.UpdateUser(id, req)
+		user, err := h.services.UpdateUser(id, req)
 		if err != nil {
 
 			appErrors.NewInternal(w, err, nil)
