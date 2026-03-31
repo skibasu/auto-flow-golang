@@ -1,96 +1,23 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
-	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/config"
-	"github.com/skibasu/auto-flow-api/internal/db"
-	"github.com/skibasu/auto-flow-api/internal/dto"
-	"github.com/skibasu/auto-flow-api/internal/handlers"
-	"github.com/skibasu/auto-flow-api/internal/repository"
-	"github.com/skibasu/auto-flow-api/internal/services"
+	"github.com/skibasu/auto-flow-api/internal/server"
 )
 
 func main() {
-	cfg := config.Load()
-	database, err := db.New(cfg.DBUrl)
-	if err != nil {
-		panic(err)
-	}
-	appMiddleware.RegisterValidation()
-	userRepo := repository.NewUserRepository(database)
-	authService := services.New(userRepo, cfg.JWTSecret)
-	userService := services.NewUserService(userRepo)
+	cfg := config.NewConfig()
+	srv := server.NewServer(cfg)
 
-	defer database.Close()
+	defer srv.DB.Close()
 
-	router := chi.NewRouter()
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Logger)
-	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{
-			"https://localhost:3001",
-		},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		AllowCredentials: true,
-	}))
-	router.Use(appMiddleware.JSON)
+	var router = srv.Router
+	var handlers = srv.Handler
+	var middleware = srv.MiddleWare
 
-	//Public
-	router.Group(func(r chi.Router) {
-		r.With(appMiddleware.ValidateRequest[dto.Credentials](true)).Post("/auth", handlers.Auth(authService))
-		r.Post("/refresh", handlers.RefreshToken(authService))
-	})
-	//Privet
-
-	router.Group(func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware)
-		r.Route("/me", func(r chi.Router) {
-
-			r.Get("/", handlers.GetMe(userService))
-		})
-	})
-
-	router.Group(func(r chi.Router) {
-		r.Use(appMiddleware.AuthMiddleware)
-		r.Use(appMiddleware.RequireRole([]string{"MANAGER", "ADMIN"}))
-		r.Route("/repairs", func(r chi.Router) {
-
-			r.Get("/", handlers.GetRepairs)
-		})
-	})
-	//Admin
-	router.Group(func(r chi.Router) {
-
-		r.Use(appMiddleware.AuthMiddleware)
-		r.Use(appMiddleware.RequireRole([]string{"ADMIN"}))
-		r.Route("/users", func(r chi.Router) {
-			r.With(appMiddleware.ValidateRequest[dto.UserRequest](false)).Post("/", handlers.CreateUser(userService))
-			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](false)).Patch("/{id}", handlers.UpdateUser(userService))
-			r.Delete("/{id}", handlers.DeleteUser(userService))
-			r.Get("/", handlers.GetUsers(userService))
-		})
-	})
-
-	server := &http.Server{
-		Addr:              ":" + cfg.AppPort,
-		Handler:           router,
-		ReadTimeout:       15 * time.Second,
-		ReadHeaderTimeout: 5 * time.Second,
-		WriteTimeout:      15 * time.Second,
-		IdleTimeout:       60 * time.Second,
-	}
-	error := server.ListenAndServe()
-
-	if error != nil {
-		fmt.Println("Failed to listen the server. ", error)
-	}
+	//Initialize routes
+	router.InitializeRoutes(handlers, middleware)
+	//Run server
+	srv.RunServer()
 
 }

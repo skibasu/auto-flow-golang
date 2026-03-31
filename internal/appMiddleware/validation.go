@@ -14,9 +14,7 @@ import (
 
 const BodyKey = contextKey("body")
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
-
-func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
+func ValidateRequest[T any](appMiddleware *AppMiddleware, protectData bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -60,7 +58,7 @@ func ValidateRequest[T any](protectData bool) func(http.Handler) http.Handler {
 
 			}
 
-			if err := validate.Struct(body); err != nil {
+			if err := appMiddleware.Validator.Struct(body); err != nil {
 				var validateErrs validator.ValidationErrors
 
 				if errors.As(err, &validateErrs) {

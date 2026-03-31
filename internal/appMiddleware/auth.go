@@ -7,22 +7,10 @@ import (
 	"strings"
 
 	"github.com/skibasu/auto-flow-api/internal/appErrors"
-	"github.com/skibasu/auto-flow-api/internal/config"
 	"github.com/skibasu/auto-flow-api/internal/jwt"
 )
 
-type contextKey string
-
-const UserCtxKey = contextKey("user")
-
-type UserContext struct {
-	Id    string
-	Roles []string
-}
-
-var cfg = config.Load()
-
-func AuthMiddleware(next http.Handler) http.Handler {
+func (m *AppMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		header := r.Header.Get("Authorization")
@@ -39,7 +27,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		tokenStr := parts[1]
 
-		claims, err := jwt.ParseToken(tokenStr, cfg.JWTSecret)
+		claims, err := jwt.ParseToken(tokenStr, m.Config.Secret)
 		if err != nil {
 			appErrors.NewUnauthorized(w, errors.New("invalid token"), nil)
 			return
@@ -51,7 +39,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			Roles: roles,
 		}
 
-		ctx := context.WithValue(r.Context(), UserCtxKey, user)
+		ctx := context.WithValue(r.Context(), m.UserCtxKey, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
