@@ -15,7 +15,7 @@ import (
 func (h *Handler) GetMe() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		ctxUser, ok := r.Context().Value(h.middleware.UserCtxKey).(appMiddleware.UserContext)
+		ctxUser, ok := r.Context().Value(appMiddleware.UserContextKey).(appMiddleware.UserContext)
 		if !ok {
 			appErrors.NewUnauthorized(w, errors.New("invalid user context"), nil)
 			return

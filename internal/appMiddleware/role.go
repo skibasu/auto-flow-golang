@@ -21,7 +21,7 @@ func (m *AppMiddleware) RequireRole(roles []string) func(http.Handler) http.Hand
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			user, ok := r.Context().Value(m.UserCtxKey).(UserContext)
+			user, ok := r.Context().Value(UserContextKey).(UserContext)
 			if !ok {
 				helpers.NewUnauthorized(w, errors.New("unauthorized"), nil)
 

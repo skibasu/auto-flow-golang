@@ -15,6 +15,9 @@ func main() {
 	var handlers = srv.Handler
 	var middleware = srv.MiddleWare
 
+	// Initialize middlewares
+	router.InitializeMiddlewares()
+
 	//Initialize routes
 	router.InitializeRoutes(handlers, middleware)
 	//Run server

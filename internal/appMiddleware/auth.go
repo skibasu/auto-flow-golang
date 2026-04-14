@@ -39,7 +39,7 @@ func (m *AppMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 			Roles: roles,
 		}
 
-		ctx := context.WithValue(r.Context(), m.UserCtxKey, user)
+		ctx := context.WithValue(r.Context(), UserContextKey, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

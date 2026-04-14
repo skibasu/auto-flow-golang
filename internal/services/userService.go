@@ -17,14 +17,14 @@ func (s *Service) GetUsers(filters dto.UsersFilterRequest) (*[]models.User, erro
 func (s *Service) CreateUser(user dto.UserRequest) (*models.User, error) {
 
 	if user.Password != "" {
-		hashed, err := password.HashPassword(&user.Password)
+		hashed, err := password.HashPassword(user.Password)
 		if err != nil {
 			return nil, err
 		}
 		user.Password = hashed
 	} else {
 		initPass := "Admin0Auto@"
-		hashed, err := password.HashPassword(&initPass)
+		hashed, err := password.HashPassword(initPass)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func (s *Service) DeleteUser(id string) error {
 func (s *Service) UpdateUser(id string, user dto.UpdateUserRequest) (*models.User, error) {
 
 	if user.Password != nil && *user.Password != "" {
-		hashed, err := password.HashPassword(user.Password)
+		hashed, err := password.HashPassword(*user.Password)
 		if err != nil {
 			return nil, err
 		}
