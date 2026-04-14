@@ -17,7 +17,7 @@ type UserContext struct {
 	Roles []string
 }
 
-var UserContextKey = ContextKey("user")
+const UserContextKey ContextKey = "user"
 
 type AppMiddleware struct {
 	Validator *validator.Validate
