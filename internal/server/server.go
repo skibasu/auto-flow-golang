@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -36,12 +37,14 @@ func NewServer(config config.Config) *Server {
 	repository := repository.NewRepository(s.DB)
 	services := services.NewService(repository, config)
 
-	s.Handler = handlers.NewHandler(services, s.MiddleWare)
+	s.Handler = handlers.NewHandler(services)
 	s.Router = router.NewRouter()
+	s.printBootstrapStatus()
 
 	return &s
 
 }
+
 func (s *Server) RunServer() {
 	server := &http.Server{
 		Addr:              ":" + s.Config.AppPort,
@@ -51,9 +54,10 @@ func (s *Server) RunServer() {
 		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	error := server.ListenAndServe()
+	s.printStartupBanner()
+	err := server.ListenAndServe()
 
-	if error != nil {
-		fmt.Println("Failed to listen the server. ", error)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		fmt.Printf("%s%s[error]%s Failed to listen the server: %v\n", ansiBold, ansiGreen, ansiReset, err)
 	}
 }

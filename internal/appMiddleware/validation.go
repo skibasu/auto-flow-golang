@@ -12,7 +12,7 @@ import (
 	helpers "github.com/skibasu/auto-flow-api/internal/appErrors"
 )
 
-const BodyKey = contextKey("body")
+const BodyKey = ContextKey("body")
 
 func ValidateRequest[T any](appMiddleware *AppMiddleware, protectData bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

@@ -6,7 +6,7 @@ import (
 )
 
 type Service struct {
-	repo   *repository.Repository
+	repo   repository.RepositoryUser
 	config config.Config
 }
 

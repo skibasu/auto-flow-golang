@@ -1,16 +1,40 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/skibasu/auto-flow-api/internal/appMiddleware"
 	"github.com/skibasu/auto-flow-api/internal/dto"
-	"github.com/skibasu/auto-flow-api/internal/handlers"
 )
 
 type Router struct {
 	*chi.Mux
+}
+
+type PublicHandler interface {
+	Auth() http.HandlerFunc
+	RefreshToken() http.HandlerFunc
+}
+
+type PrivateHandler interface {
+	GetMe() http.HandlerFunc
+	GetRepair() http.HandlerFunc
+}
+
+type AdminHandler interface {
+	CreateUser() http.HandlerFunc
+	UpdateUser() http.HandlerFunc
+	DeleteUser() http.HandlerFunc
+	GetUsers() http.HandlerFunc
+}
+
+type Handler interface {
+	PublicHandler
+	PrivateHandler
+	AdminHandler
 }
 
 func NewRouter() *Router {
@@ -31,26 +55,26 @@ func (r *Router) InitializeMiddlewares() {
 	r.Use(appMiddleware.JSON)
 }
 
-func (r *Router) InitializeRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
-	r.InitializeAdminRoutes(handlers, mw)
-	r.InitializePrivateRoutes(handlers, mw)
-	r.InitializePublicRoutes(handlers, mw)
+func (r *Router) InitializeRoutes(h Handler, mw *appMiddleware.AppMiddleware) {
+	r.InitializeAdminRoutes(h, mw)
+	r.InitializePrivateRoutes(h, mw)
+	r.InitializePublicRoutes(h, mw)
 }
-func (r *Router) InitializePublicRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+func (r *Router) InitializePublicRoutes(h PublicHandler, mw *appMiddleware.AppMiddleware) {
 	r.Group(func(r chi.Router) {
 
-		r.With(appMiddleware.ValidateRequest[dto.Credentials](mw, true)).Post("/auth", handlers.Auth())
-		r.Post("/refresh", handlers.RefreshToken())
+		r.With(appMiddleware.ValidateRequest[dto.Credentials](mw, true)).Post("/auth", h.Auth())
+		r.Post("/refresh", h.RefreshToken())
 	})
 }
 
-func (r *Router) InitializePrivateRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+func (r *Router) InitializePrivateRoutes(h PrivateHandler, mw *appMiddleware.AppMiddleware) {
 
 	r.Group(func(r chi.Router) {
 		r.Use(mw.AuthMiddleware)
 		r.Route("/me", func(r chi.Router) {
 
-			r.Get("/", handlers.GetMe())
+			r.Get("/", h.GetMe())
 		})
 	})
 
@@ -59,20 +83,20 @@ func (r *Router) InitializePrivateRoutes(handlers *handlers.Handler, mw *appMidd
 		r.Use(mw.RequireRole([]string{"MANAGER", "ADMIN"}))
 		r.Route("/repairs", func(r chi.Router) {
 
-			r.Get("/", handlers.GetRepairs)
+			r.Get("/", h.GetRepair())
 		})
 	})
 }
 
-func (r *Router) InitializeAdminRoutes(handlers *handlers.Handler, mw *appMiddleware.AppMiddleware) {
+func (r *Router) InitializeAdminRoutes(h AdminHandler, mw *appMiddleware.AppMiddleware) {
 	r.Group(func(r chi.Router) {
 		r.Use(mw.AuthMiddleware)
 		r.Use(mw.RequireRole([]string{"ADMIN"}))
 		r.Route("/users", func(r chi.Router) {
-			r.With(appMiddleware.ValidateRequest[dto.UserRequest](mw, false)).Post("/", handlers.CreateUser())
-			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](mw, false)).Patch("/{id}", handlers.UpdateUser())
-			r.Delete("/{id}", handlers.DeleteUser())
-			r.Get("/", handlers.GetUsers())
+			r.With(appMiddleware.ValidateRequest[dto.UserRequest](mw, false)).Post("/", h.CreateUser())
+			r.With(appMiddleware.ValidateRequest[dto.UpdateUserRequest](mw, false)).Patch("/{id}", h.UpdateUser())
+			r.Delete("/{id}", h.DeleteUser())
+			r.Get("/", h.GetUsers())
 		})
 	})
 }

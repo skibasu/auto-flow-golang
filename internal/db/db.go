@@ -7,5 +7,15 @@ import (
 )
 
 func NewDB(url string) (*pgxpool.Pool, error) {
-	return pgxpool.New(context.Background(), url)
+	pool, err := pgxpool.New(context.Background(), url)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := pool.Ping(context.Background()); err != nil {
+		pool.Close()
+		return nil, err
+	}
+
+	return pool, nil
 }

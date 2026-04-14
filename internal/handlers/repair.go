@@ -9,12 +9,14 @@ type Repair struct {
 	Id string `json:"id"`
 }
 
-func (h *Handler) GetRepairs(w http.ResponseWriter, r *http.Request) {
-	repairs := []Repair{
-		{Id: "1"},
-		{Id: "2"},
-		{Id: "3"},
+func (h *Handler) GetRepair() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		repairs := []Repair{
+			{Id: "1"},
+			{Id: "2"},
+			{Id: "3"},
+		}
+		// 📦 response
+		json.NewEncoder(w).Encode(repairs)
 	}
-	// 📦 response
-	json.NewEncoder(w).Encode(repairs)
 }

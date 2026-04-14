@@ -10,24 +10,25 @@ import (
 	"github.com/skibasu/auto-flow-api/internal/utils"
 )
 
-type contextKey string
+type ContextKey string
 
 type UserContext struct {
 	Id    string
 	Roles []string
 }
 
+const UserContextKey ContextKey = "user"
+
 type AppMiddleware struct {
-	Validator  *validator.Validate
-	UserCtxKey contextKey
-	Config     config.Config
+	Validator *validator.Validate
+	Config    config.Config
 }
 
 func NewAppMiddleware(cfg config.Config) *AppMiddleware {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	registerValidation(v)
 
-	return &AppMiddleware{UserCtxKey: contextKey("user"), Config: cfg, Validator: v}
+	return &AppMiddleware{Config: cfg, Validator: v}
 
 }
 
